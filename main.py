@@ -1,4 +1,3 @@
-from flask import Flask, render_template
 import requests
 import os
 from dotenv import load_dotenv
@@ -6,12 +5,12 @@ from dotenv import load_dotenv
 load_dotenv
 API_KEY = os.getenv("GEOIPLOCATOR_API_KEY")
 
-app = Flask(__name__)
 
 def get_coords(ip):
-    response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={API_KEY}&ip={ip}')
+    response = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey=7f52e57f64904bcaa6c5bca14fd0a27f&ip={ip}')
     json = response.json()
     lat = 0
+    print(json)
     long = 0
     try:
         lat = json["latitude"]
@@ -20,16 +19,27 @@ def get_coords(ip):
         pass
     return {"lat": lat, "lng": long}
 
-@app.route("/")
 def main():
+    x = 0
+    y = 0
     ips = []
     with open('ip_addresses.txt') as file:
         print()
         ips = [line.strip() for line in file.readlines()]
     
-    coordinates = [get_coords(ip) for ip in ips]
-    
-    return render_template("index.html", coordinates=coordinates)
+   
+    for ip in ips:
+        coords = get_coords(ip)
+        y+=1
+        if(coords["lat"]!=0 or coords["lng"]!=0):
+            x+=1
+            with open("coordinates.txt", "a") as file:
+                file.write(f'{ip} | {coords["lat"]} | {coords["lng"]} \n')
+            print(f'{x} found in {y}')
+            
+        
+        
 
-if __name__ == "__main__":
-    app.run(debug=True)
+main()
+
+# we can get rid of development once I get a google maps API key, / implement it (i already have one)
