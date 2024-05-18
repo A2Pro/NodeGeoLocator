@@ -1,8 +1,28 @@
 import requests
 import os
 from dotenv import load_dotenv
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 
 load_dotenv()
+
+uri = os.getenv("MONGO_URI")
+
+client = MongoClient(uri, server_api=ServerApi('1'))
+
+def get_file(filename):
+    collection = client["ip_coords"]["ip/coords"]
+    entry  = collection.find_one({"filename": filename})
+    return entry["file"]
+
+def update_file(filename):
+    f = open(filename, "r")
+    file_content = f.read()
+    collection = client["ip_coords"]["ip/coords"]
+    collection.update_one(
+      { "filename" : filename },
+      { "$set": { "file" : file_content} } #void
+    )
 
 API_KEY = os.getenv("GEOIPLOCATOR_API_KEY")
 
@@ -22,6 +42,8 @@ def main():
     x = 0
     y = 0
     ips = []
+    with open("coordinates.txt", "w") as file:
+        file.write(get_file("coordinates.txt"))
     with open("coordinates.txt", "r") as file:
         coords_list = file.read()
     with open('ip_addresses.txt') as file:
@@ -35,6 +57,8 @@ def main():
             with open("coordinates.txt", "a") as file:
                 file.write(f'{ip} | {coords["lat"]} | {coords["lng"]} \n')
             print(f'{x} found in {y}')
+    update_file("coordinates.txt", "coordinates.txt")
+    
 
 if __name__ == "__main__":
     main()
