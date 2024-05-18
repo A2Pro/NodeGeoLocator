@@ -1,36 +1,29 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
+    <title>Map</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-      #map {
-        width: 100%;
-        height: 500px;
-      }
+        #map { width: 100%; height: 500px; }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js"></script>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-      function initialize() {
-        var mapCanvas = document.getElementById('map');
-        var mapOptions = {
-          center: {lat: 0, lng: 0},
-          zoom: 2,
-          mapTypeId: google.maps.MapTypeId.ROADMAP
-        }
-        var map = new google.maps.Map(mapCanvas, mapOptions);
+        var map = L.map('map').setView([0, 0], 2);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
 
         var markers = {{ coordinates | tojson }};
         markers.forEach(function(marker) {
-          new google.maps.Marker({
-            position: {lat: parseFloat(marker.lat), lng: parseFloat(marker.lng)},
-            map: map,
-            title: 'IP Location'
-          });
+            L.marker([parseFloat(marker.lat), parseFloat(marker.lng)]).addTo(map)
+                .bindPopup('IP: ' + marker.ip);
         });
-      }
-      google.maps.event.addDomListener(window, 'load', initialize);
     </script>
-  </head>
-  <body>
-    <div id="map"></div>
-  </body>
+</body>
 </html>
